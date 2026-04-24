@@ -6,10 +6,10 @@ after each chunk. Click any suggestion for a detailed answer, or ask
 your own questions in the chat panel.
 
 ## Live Demo
-[Netlify URL]
+resplendent-sprinkles-1bd66f.netlify.app
 
 ## GitHub
-[GitHub URL]
+(https://github.com/vamsikopparthi24/twinmind)
 
 ## Setup
 1. Open the deployed URL in Chrome
