@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TwinMind Copilot</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0f0f10;
+      color: #f4f4f5;
+    }
+    #app {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    header {
+        height: 52px;
+        background: #18181b;
+        border-bottom: 1px solid #27272a;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        flex-shrink: 0;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .logo-icon {
+        width: 26px;
+        height: 26px;
+        background: #6366f1;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+    }
+
+    .logo-text {
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: -0.5px;
+    }
+
+    .logo-badge {
+        font-size: 10px;
+        color: #71717a;
+        background: #27272a;
+        padding: 2px 7px;
+        border-radius: 99px;
+        letter-spacing: 0.5px;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #status-msg {
+        font-size: 11px;
+        color: #71717a;
+        max-width: 300px;
+    }
+
+    header button {
+        background: transparent;
+        border: 1px solid #27272a;
+        color: #71717a;
+        border-radius: 8px;
+        padding: 5px 12px;
+        font-size: 12px;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
+    header button:hover {
+        border-color: #3f3f46;
+        color: #f4f4f5;
+    }
+    
+    main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        overflow: hidden;
+    }
+
+    section {
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #27272a;
+        overflow: hidden;
+        }
+
+    section:last-child {
+        border-right: none;
+        }
+
+    .col-header {
+        height: 44px;
+        padding: 0 16px;
+        border-bottom: 1px solid #27272a;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        }
+
+    .col-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #71717a;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .col-header button {
+        background: transparent;
+        border: 1px solid #27272a;
+        color: #f4f4f5;
+        border-radius: 8px;
+        padding: 5px 12px;
+        font-size: 11px;
+        font-family: inherit;
+        cursor: pointer;
+    }
+
+    .col-header button:hover {
+        border-color: #6366f1;
+    }
+
+    #btn-record {
+        background: #6366f1;
+        border-color: #6366f1;
+        color: #fff;
+        font-weight: 600;
+        padding: 5px 14px;
+        }
+
+        #btn-record:hover {
+        background: #4f46e5;
+        border-color: #4f46e5;
+        }
+
+    .col-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        }
+
+    .col-body::-webkit-scrollbar { width: 4px; }
+    .col-body::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+
+    .empty-msg {
+        font-size: 13px;
+        color: #52525b;
+        font-style: italic;
+        line-height: 1.6;
+        }
+
+    .chat-input-row {
+        padding: 10px 14px;
+        border-top: 1px solid #27272a;
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    #chat-input {
+        flex: 1;
+        background: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: #f4f4f5;
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+    }
+
+    #chat-input:focus {
+        border-color: #6366f1;
+    }
+
+    #btn-send {
+        background: #6366f1;
+        border: none;
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-family: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    #btn-send:hover {
+        background: #4f46e5;
+    }
+
+    .hidden { display: none !important; }
+
+    #modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+        }
+
+    #modal {
+        background: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 16px;
+        padding: 26px;
+        width: 660px;
+        max-height: 88vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        }
+
+    .modal-header h2 {
+        font-size: 16px;
+        font-weight: 700;
+        }
+
+    .modal-header button {
+        background: none;
+        border: none;
+        color: #71717a;
+        font-size: 18px;
+        cursor: pointer;
+        font-family: inherit;
+        }
+
+    .field-label {
+        font-size: 10px;
+        color: #71717a;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-top: 10px;
+        display: block;
+        }
+
+    #modal input[type="text"],
+    #modal input[type="password"],
+    #modal input[type="number"],
+    #modal textarea {
+        width: 100%;
+        background: #0f0f10;
+        border: 1px solid #27272a;
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: #f4f4f5;
+        font-size: 12px;
+        font-family: inherit;
+        outline: none;
+        margin-top: 4px;
+        resize: vertical;
+        line-height: 1.6;
+        }
+
+    #modal input:focus,
+    #modal textarea:focus {
+    border-color: #6366f1;
+    }
+
+    .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        margin-top: 10px;
+        }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+        }
+
+    #btn-reset-defaults {
+        background: transparent;
+        border: 1px solid #27272a;
+        color: #71717a;
+        border-radius: 8px;
+        padding: 7px 16px;
+        font-size: 13px;
+        font-family: inherit;
+        cursor: pointer;
+        }
+
+    #btn-save-settings {
+        background: #6366f1;
+        border: none;
+        color: #fff;
+        border-radius: 8px;
+        padding: 7px 20px;
+        font-size: 13px;
+        font-family: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        }
+
+    .transcript-chunk {
+        margin-bottom: 16px;
+    }
+
+    .chunk-time {
+        font-size: 10px;
+        color: #52525b;
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .chunk-text {
+        font-size: 13.5px;
+        line-height: 1.7;
+        color: #f4f4f5;
+    }
+
+    #recording-indicator {
+        padding: 8px 16px;
+        border-top: 1px solid #27272a;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        flex-shrink: 0;
+        }
+
+        .rec-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #ef4444;
+        animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+        }
+
+        .rec-label {
+        font-size: 11px;
+        color: #71717a;
+        }
+
+        /* ── Suggestion loading state ── */
+        .loading-msg {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #71717a;
+        padding: 4px 0;
+        }
+
+        .loading-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #6366f1;
+        animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        /* ── Batch container ── */
+        .batch {
+        margin-bottom: 24px;
+        }
+
+        .batch-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        }
+
+        .batch-time {
+        font-size: 10px;
+        color: #52525b;
+        }
+
+        .batch-latest {
+        font-size: 10px;
+        font-weight: 600;
+        background: #1e1b4b;
+        color: #818cf8;
+        padding: 1px 7px;
+        border-radius: 99px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        }
+
+        /* ── Suggestion card ── */
+        .suggestion-card {
+        background: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: border-color 0.15s;
+        }
+
+        .suggestion-card:hover {
+        border-color: #6366f1;
+        }
+
+        .card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        }
+
+        .type-badge {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 99px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        }
+
+        .card-arrow {
+        font-size: 14px;
+        color: #3f3f46;
+        transition: color 0.15s;
+        }
+
+        .suggestion-card:hover .card-arrow {
+        color: #6366f1;
+        }
+
+        .card-preview {
+        font-size: 13.5px;
+        font-weight: 600;
+        line-height: 1.45;
+        color: #f4f4f5;
+        margin-bottom: 6px;
+        }
+
+        .card-detail {
+        font-size: 12px;
+        color: #71717a;
+        line-height: 1.6;
+        }
+
+        /* ── Chat message wrapper ── */
+        .chat-msg {
+        margin-bottom: 16px;
+        }
+
+        .msg-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+        }
+
+        .msg-role {
+        font-size: 11px;
+        font-weight: 600;
+        color: #52525b;
+        }
+
+        .chat-msg.assistant .msg-role {
+        color: #6366f1;
+        }
+
+        .msg-time {
+        font-size: 10px;
+        color: #3f3f46;
+        }
+
+        .msg-source {
+        font-size: 10px;
+        color: #6366f1;
+        }
+
+        /* ── Message bubble ── */
+        .msg-bubble {
+        background: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 10px;
+        padding: 10px 13px;
+        font-size: 13px;
+        line-height: 1.75;
+        color: #f4f4f5;
+        white-space: pre-wrap;    /* preserves line breaks from the model */
+        word-break: break-word;   /* prevents long words from overflowing */
+        }
+
+        .chat-msg.user .msg-bubble {
+        background: #1e1b4b;
+        border-color: #4338ca55;
+        }
+
+        /* ── Thinking indicator ── */
+        .chat-thinking {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #71717a;
+        padding: 4px 0;
+        }
+
+  </style>
+</head>
+<body>
+
+  <div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">TwinMind</span>
+      <span class="logo-badge">COPILOT</span>
+    </div>
+    <div class="header-actions">
+      <span id="status-msg"></span>
+      <button id="btn-export">⬇ Export</button>
+      <button id="btn-settings">⚙ Settings</button>
+    </div>
+  </header>
+
+  <!-- MAIN 3 COLUMNS -->
+  <main>
+
+    <!-- LEFT: TRANSCRIPT -->
+    <section id="col-transcript">
+      <div class="col-header">
+        <span class="col-title">Transcript</span>
+        <button id="btn-record">⏺ Record</button>
+      </div>
+      <div class="col-body" id="transcript-body">
+        <p class="empty-msg">Press Record to start. Transcript chunks will appear here.</p>
+      </div>
+      <div id="recording-indicator" class="hidden">
+        <span class="rec-dot"></span>
+        <span class="rec-label">Live · next chunk in ~<span id="rec-countdown">30</span>s</span>
+    </div>
+    </section>
+
+    <!-- MIDDLE: SUGGESTIONS -->
+    <section id="col-suggestions">
+      <div class="col-header">
+        <span class="col-title">Live Suggestions</span>
+        <button id="btn-refresh">↻ Refresh</button>
+      </div>
+      <div class="col-body" id="suggestions-body">
+        <p class="empty-msg">Suggestions will appear after your first transcript chunk.</p>
+      </div>
+    </section>
+
+    <!-- RIGHT: CHAT -->
+    <section id="col-chat">
+      <div class="col-header">
+        <span class="col-title">Chat</span>
+      </div>
+      <div class="col-body" id="chat-body">
+        <p class="empty-msg">Click a suggestion or type a question below.</p>
+      </div>
+      <div class="chat-input-row">
+        <input id="chat-input" type="text" placeholder="Ask anything about the conversation…" />
+        <button id="btn-send">Send</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SETTINGS MODAL -->
+  <div id="modal-overlay" class="hidden">
+    <div id="modal">
+
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button id="btn-close-settings">✕</button>
+      </div>
+
+      <label class="field-label">GROQ API KEY</label>
+      <input id="input-api-key" type="password" placeholder="gsk_…" />
+
+      <label class="field-label">SUGGESTION PROMPT</label>
+      <textarea id="input-suggestion-prompt" rows="6"></textarea>
+
+      <label class="field-label">DETAIL PROMPT (used when a card is clicked)</label>
+      <textarea id="input-detail-prompt" rows="5"></textarea>
+
+      <label class="field-label">CHAT PROMPT</label>
+      <textarea id="input-chat-prompt" rows="4"></textarea>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">SUGGESTION CONTEXT (chars)</label>
+          <input id="input-sug-ctx" type="number" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">CHAT CONTEXT (chars)</label>
+          <input id="input-chat-ctx" type="number" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">CHUNK INTERVAL (seconds)</label>
+          <input id="input-interval" type="number" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-reset-defaults">Reset Defaults</button>
+        <button id="btn-save-settings">Save & Close</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+  <script>
+
+  // ─── DEFAULT SETTINGS ───────────────────────────────────────────
+  // These are the values the app starts with.
+  // The user can edit them in the Settings modal.
+
+  const DEFAULTS = {
+    apiKey: "",
+    suggestionPrompt: `You are a live meeting copilot. Analyze this transcript and return exactly 3 suggestions as JSON.
+
+    TYPE SELECTION — pick the type that fits the current moment:
+    - "answer": someone just asked a question → answer it
+    - "fact_check": a specific number or claim was just stated → verify it  
+    - "question": an obvious angle is missing → ask it
+    - "talking_point": an important related topic hasn't been mentioned → raise it
+    - "context": a term was used without explanation → clarify it
+
+    Never pick the same type twice. Never write generic previews.
+    Preview must be a specific, standalone useful statement under 12 words.
+    Detail must be 2 sentences that add value the preview doesn't already say.
+
+    Return ONLY this JSON, nothing else:
+    [
+    {"type":"...","preview":"...","detail":"..."},
+    {"type":"...","preview":"...","detail":"..."},
+    {"type":"...","preview":"...","detail":"..."}
+    ]`,
+
+    detailPrompt: `You are a meeting copilot giving a quick answer during a live meeting.
+
+    TYPE: {type}
+    SUGGESTION: {suggestion}
+
+    STRICT RULES — violating any of these is a failure:
+    - Maximum 120 words. Stop when done.
+    - Do NOT repeat or restate the suggestion title in your response.
+    - Do NOT use bold headers, bullet sub-sections, or "In summary".
+    - Do NOT add unsolicited next steps or action items.
+
+    FORMAT — follow the exact pattern for the type above:
+
+    answer → [Direct answer in 1-2 sentences.] [One sentence of supporting context.]
+
+    question → [Direct answer to the question in 1-2 sentences.] [One sentence on what else is worth exploring.]
+
+    fact_check → [What was claimed.] [What is accurate.] [One sentence of relevant context if needed. If nothing to verify, state what information would be needed.]
+
+    talking_point → [State the point in one sentence.] [Two specific supporting reasons.] [One natural way to introduce it into the conversation.]
+
+    context → [Define it in one sentence.] [Why it matters in this specific conversation in one sentence.]
+
+    Begin your response immediately with the content — not with the suggestion title, not with the type name.`,
+
+    chatPrompt: `You are a meeting copilot in a live meeting. Answer directly and briefly.
+
+    HARD RULES:
+    - Never open with the suggestion name or type
+    - Never use bold section headers
+    - Never add unsolicited next steps or action items
+    - Simple question = 2-3 sentences. That is enough.
+    - Complex question = maximum 5 bullet points, no sub-bullets
+    - Stop when the question is answered. Do not pad.
+
+    Use the meeting transcript when relevant. Be specific to what was actually said.`,
+
+    suggestionContext: 800,
+    chatContext: 3000,
+    chunkInterval: 30
+  };
+
+  // ─── STATE ───────────────────────────────────────────────────────
+  // One object holds everything the app knows right now.
+  // We will add more fields to this as we build each phase.
+
+  let state = {
+    apiKey: "",
+    suggestionPrompt: DEFAULTS.suggestionPrompt,
+    detailPrompt: DEFAULTS.detailPrompt,
+    chatPrompt: DEFAULTS.chatPrompt,
+    suggestionContext: DEFAULTS.suggestionContext,
+    chatContext: DEFAULTS.chatContext,
+    chunkInterval: DEFAULTS.chunkInterval,
+
+    // Phase 2 additions
+    transcript: [],           // array of { text, timestamp } objects
+    isRecording: false,
+
+    // Phase 3 additions
+    batches: [],          // array of suggestion batches
+    isSuggestionsLoading: false,
+
+    // Phase 4 additions
+    chat: [],              // array of { role, content, timestamp, fromSuggestion }
+    isChatLoading: false
+
+  };
+
+  const sessionStart = new Date();
+
+  // ─── SUGGESTION TYPE METADATA ─────────────────────────────────────
+  // Maps each suggestion type to its display label and colors.
+  // Used when rendering suggestion cards.
+
+  const TYPE_META = {
+    question:      { label: "Question",      bg: "#1e3a5f", color: "#60a5fa" },
+    answer:        { label: "Answer",        bg: "#14532d", color: "#4ade80" },
+    talking_point: { label: "Talking Point", bg: "#422006", color: "#fbbf24" },
+    fact_check:    { label: "Fact Check",    bg: "#450a0a", color: "#f87171" },
+    context:       { label: "Context",       bg: "#2e1065", color: "#c084fc" },
+  };
+
+  // ─── FORMAT TIME ────────────────────────────────────────────────
+  // Turns a Date object into "2:34:05 PM" format
+
+  function formatTime(date) {
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+  }
+
+  // ─── ESCAPE HTML ──────────────────────────────────────────────────
+  // Prevents special characters in transcript/chat from breaking the HTML.
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+}
+
+  // These hold browser API objects — kept outside state intentionally
+  let mediaRecorder = null;    // the MediaRecorder instance
+  let audioStream = null;      // the live mic stream
+  let audioChunks = [];        // raw audio data collected during one chunk
+  let chunkTimer = null;       // the interval timer that restarts recording every N seconds
+
+  // ─── LOAD SAVED SETTINGS FROM LOCALSTORAGE ───────────────────────
+  // If the user saved settings before, load them now.
+
+  function loadSettings() {
+    const saved = localStorage.getItem("tm_settings");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Only restore settings fields — never session data
+        if (parsed.apiKey)           state.apiKey           = parsed.apiKey;
+        if (parsed.suggestionPrompt) state.suggestionPrompt = parsed.suggestionPrompt;
+        if (parsed.detailPrompt)     state.detailPrompt     = parsed.detailPrompt;
+        if (parsed.chatPrompt)       state.chatPrompt       = parsed.chatPrompt;
+        if (parsed.suggestionContext) state.suggestionContext = parsed.suggestionContext;
+        if (parsed.chatContext)      state.chatContext      = parsed.chatContext;
+        if (parsed.chunkInterval)    state.chunkInterval    = parsed.chunkInterval;
+    } catch(e) {
+      console.warn("Could not parse saved settings", e);
+    }
+  }
+}
+
+  // ─── SAVE SETTINGS TO LOCALSTORAGE ───────────────────────────────
+
+  function saveSettings() {
+    localStorage.setItem("tm_settings", JSON.stringify({
+      apiKey: state.apiKey,
+      suggestionPrompt: state.suggestionPrompt,
+      detailPrompt: state.detailPrompt,
+      chatPrompt: state.chatPrompt,
+      suggestionContext: state.suggestionContext,
+      chatContext: state.chatContext,
+      chunkInterval: state.chunkInterval
+    }));
+  }
+
+  // ─── POPULATE MODAL WITH CURRENT VALUES ──────────────────────────
+  // Called every time the Settings modal opens.
+
+  function populateModal() {
+    document.getElementById("input-api-key").value = state.apiKey;
+    document.getElementById("input-suggestion-prompt").value = state.suggestionPrompt;
+    document.getElementById("input-detail-prompt").value = state.detailPrompt;
+    document.getElementById("input-chat-prompt").value = state.chatPrompt;
+    document.getElementById("input-sug-ctx").value = state.suggestionContext;
+    document.getElementById("input-chat-ctx").value = state.chatContext;
+    document.getElementById("input-interval").value = state.chunkInterval;
+  }
+
+  // ─── READ MODAL VALUES INTO STATE ────────────────────────────────
+  // Called when the user clicks Save.
+
+  function readModal() {
+    state.apiKey = document.getElementById("input-api-key").value.trim();
+    state.suggestionPrompt = document.getElementById("input-suggestion-prompt").value.trim();
+    state.detailPrompt = document.getElementById("input-detail-prompt").value.trim();
+    state.chatPrompt = document.getElementById("input-chat-prompt").value.trim();
+    state.suggestionContext = parseInt(document.getElementById("input-sug-ctx").value) || 800;
+    state.chatContext = parseInt(document.getElementById("input-chat-ctx").value) || 3000;
+    state.chunkInterval = parseInt(document.getElementById("input-interval").value) || 30;
+  }
+
+  // ─── SETTINGS MODAL OPEN / CLOSE ─────────────────────────────────
+
+  function openSettings() {
+    populateModal();
+    document.getElementById("modal-overlay").classList.remove("hidden");
+  }
+
+  function closeSettings() {
+    document.getElementById("modal-overlay").classList.add("hidden");
+  }
+
+  // ─── STATUS MESSAGE ───────────────────────────────────────────────
+  // Small helper to show messages in the header bar.
+
+  function setStatus(msg, isError = false) {
+    const el = document.getElementById("status-msg");
+    el.textContent = msg;
+    el.style.color = isError ? "#f87171" : "#71717a";
+  }
+
+  // ─── UPDATE RECORD BUTTON APPEARANCE ─────────────────────────────
+  // Changes the button text and color depending on recording state.
+
+  function updateRecordButton() {
+    const btn = document.getElementById("btn-record");
+    if (state.isRecording) {
+        btn.textContent = "◼ Stop";
+        btn.style.background = "#ef4444";
+        btn.style.color = "#fff";
+        btn.style.borderColor = "#ef4444";
+    } else {
+        btn.textContent = "⏺ Record";
+        btn.style.background = "#6366f1";
+        btn.style.color = "#fff";
+        btn.style.borderColor = "#6366f1";
+    }
+  }
+
+  // ─── TRANSCRIBE AUDIO BLOB ────────────────────────────────────────
+  // Sends one audio chunk to Groq Whisper and appends the result
+  // to state.transcript, then re-renders the transcript panel.
+
+  async function transcribeBlob(blob) {
+
+    // Don't bother sending if the blob is too small — probably silence
+    if (blob.size < 1000) {
+        console.log("Blob too small, skipping transcription");
+        return;
+    }
+
+    setStatus("Transcribing...");
+
+    // FormData is how you send files to an API from the browser.
+    // Groq's Whisper endpoint expects a multipart form, not JSON.
+    const form = new FormData();
+
+    // Wrap the blob in a File object so it has a filename.
+    // Groq uses the filename extension to know it's audio.
+    form.append("file", new File([blob], "audio.webm", { type: blob.type }));
+    form.append("model", "whisper-large-v3");
+    form.append("language", "en");
+    form.append("response_format", "json");
+
+    try {
+        const response = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+        method: "POST",
+        headers: {
+            // Note: do NOT set Content-Type here.
+            // fetch sets it automatically for FormData, including the boundary.
+            "Authorization": `Bearer ${state.apiKey}`
+        },
+        body: form
+        });
+
+        const data = await response.json();
+
+        // If Groq returned an error, show it
+        if (data.error) {
+        setStatus("Whisper error: " + data.error.message, true);
+        return;
+        }
+
+        // If we got text back, add it to state and re-render
+        if (data.text && data.text.trim()) {
+        state.transcript.push({
+            text: data.text.trim(),
+            timestamp: new Date()
+        });
+        renderTranscript();
+        setStatus("");
+        generateSuggestions(); // automatically generate suggestions for the new transcript
+        }
+
+    } catch(e) {
+        setStatus("Network error: " + e.message, true);
+    }
+  }
+
+  // ─── START RECORDING ──────────────────────────────────────────────
+
+    async function startRecording() {
+
+    // Guard: need an API key before we can do anything
+    if (!state.apiKey) {
+        openSettings();
+        setStatus("Please add your Groq API key first.", true);
+        return;
+    }
+
+    try {
+        // Ask the browser for mic access.
+        // This shows the permission popup to the user.
+        // If they deny, this throws an error — caught below.
+        if (!audioStream) {
+            audioStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                echoCancellation: true,
+                noiseSuppression: true
+                }
+            });
+}
+
+        // A function that starts one recording chunk.
+        // We define it here so we can call it repeatedly.
+        function startChunk() {
+
+        // Collect audio data as it comes in
+        audioChunks = [];
+
+        // Pick the right audio format.
+        // audio/webm;codecs=opus is the best quality and most widely supported.
+        const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+            ? "audio/webm;codecs=opus"
+            : "audio/webm";
+
+        mediaRecorder = new MediaRecorder(audioStream, { mimeType });
+
+        // Called continuously as audio data becomes available.
+        // We just collect the chunks — don't process yet.
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) {
+            audioChunks.push(e.data);
+            }
+        };
+
+        // Called when .stop() is called.
+        // NOW we combine all chunks and send to Whisper.
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(audioChunks, { type: mimeType });
+            transcribeBlob(blob);
+        };
+
+        // Start recording. The number here (1000) is how often
+        // ondataavailable fires in milliseconds. 1000ms = every second.
+        mediaRecorder.start(1000);
+        }
+
+        // Start the first chunk immediately
+        startChunk();
+
+        // Set a repeating timer. Every N seconds:
+        // stop the current chunk (triggers onstop → transcribeBlob)
+        // wait 300ms for onstop to fire
+        // start a new chunk
+        chunkTimer = setInterval(() => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+            setTimeout(startChunk, 300);
+        }
+        }, state.chunkInterval * 1000);
+
+        // Update state and UI
+        state.isRecording = true;
+        updateRecordButton();
+        setStatus("Recording...");
+
+        document.getElementById("recording-indicator").classList.remove("hidden");
+
+    } catch(e) {
+        setStatus("Mic error: " + e.message, true);
+    }
+    }
+
+    // ─── STOP RECORDING ───────────────────────────────────────────────
+
+    function stopRecording() {
+
+    // Clear the repeating timer
+    clearInterval(chunkTimer);
+    chunkTimer = null;
+
+    // Stop the current recording chunk
+    // This fires onstop, which transcribes whatever was recorded
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+    }
+
+    // Keep the stream alive so we don't re-request mic permission on next record
+    // Tracks stay active — browser mic indicator remains visible while app is open
+
+    // Update state and UI
+    state.isRecording = false;
+    updateRecordButton();
+    setStatus("Recording stopped.");
+
+    document.getElementById("recording-indicator").classList.add("hidden");
+    }
+
+  // ─── RENDER TRANSCRIPT ────────────────────────────────────────────
+  // Redraws the transcript panel from state.transcript array.
+  // Each chunk is an object: { text: "...", timestamp: Date }
+
+  function renderTranscript() {
+    const body = document.getElementById("transcript-body");
+
+    // If nothing recorded yet, show the placeholder
+    if (state.transcript.length === 0) {
+        body.innerHTML = `<p class="empty-msg">Press Record to start. Transcript chunks will appear here.</p>`;
+        return;
+  }
+
+    // Build HTML for each chunk
+    // We use .map() to turn each chunk object into an HTML string
+    // then .join("") to combine them all into one string
+    body.innerHTML = state.transcript.map(chunk => `
+        <div class="transcript-chunk">
+            <span class="chunk-time">${formatTime(chunk.timestamp)}</span>
+            <p class="chunk-text">${escapeHtml(chunk.text)}</p>
+        </div>
+    `).join("");
+
+
+    // Auto-scroll to the bottom so latest chunk is always visible
+    body.scrollTop = body.scrollHeight;
+  }
+
+  // ─── GENERATE SUGGESTIONS ─────────────────────────────────────────
+  // Calls the Groq LLM with the recent transcript and asks it to
+  // return 3 suggestion cards as a JSON array.
+  // manual = true means the user clicked the Refresh button.
+
+  async function generateSuggestions(manual = false) {
+    // Need an API key
+    if (!state.apiKey) {
+      setStatus("No API key. Open settings.", true);
+      return;
+    }
+
+    // Need something to work with
+    if (state.transcript.length === 0) {
+      if (manual) setStatus("No transcript yet — speak first.", true);
+    return;
+  }
+
+  // Don't run two suggestion calls at the same time
+  if (state.isSuggestionsLoading) return;
+
+  state.isSuggestionsLoading = true;
+  renderSuggestions(); // shows the loading state immediately
+
+  // ── Build the context ──────────────────────────────────────────
+  // Join all transcript chunks into one string
+  const fullText = state.transcript.map(c => c.text).join(" ");
+
+  // Take only the last N characters — focused on what was just said
+  // state.suggestionContext is 800 by default
+  const recentContext = fullText.slice(-state.suggestionContext);
+
+  try {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${state.apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.7,      // some creativity, but not random
+        max_tokens: 900,
+        messages: [
+          {
+            role: "system",
+            content: state.suggestionPrompt
+          },
+          {
+            role: "user",
+            content: `RECENT TRANSCRIPT (last ~${state.suggestionContext} characters):\n\n${recentContext}`
+          }
+        ]
+      })
+    });
+
+    const data = await response.json();
+
+    // ── Handle API errors ─────────────────────────────────────────
+    if (data.error) {
+      setStatus("Groq error: " + data.error.message, true);
+      state.isSuggestionsLoading = false;
+      renderSuggestions();
+      return;
+    }
+
+    // ── Parse the response ────────────────────────────────────────
+    // The model returns a string. We told it to return JSON.
+    // Strip any markdown fences the model might add (```json ... ```)
+    // then parse it.
+    const raw = data.choices[0].message.content;
+    const cleaned = raw.replace(/```json|```/g, "").trim();
+
+    let items;
+    try {
+      items = JSON.parse(cleaned);
+    } catch(parseError) {
+      setStatus("Could not parse suggestions. Retrying next chunk.", true);
+      console.error("Raw response was:", raw);
+      state.isSuggestionsLoading = false;
+      renderSuggestions();
+      return;
+    }
+
+    // ── Validate and store ────────────────────────────────────────
+    if (Array.isArray(items) && items.length > 0) {
+      // Add the new batch to the FRONT of the array
+      // so newest always appears at the top
+      state.batches.unshift({
+        id: Date.now(),
+        timestamp: new Date(),
+        items: items.slice(0, 3)   // always exactly 3
+      });
+
+      setStatus("");
+    }
+
+  } catch(e) {
+    setStatus("Network error: " + e.message, true);
+  }
+
+  state.isSuggestionsLoading = false;
+  renderSuggestions();
+}
+
+// ─── RENDER SUGGESTIONS ───────────────────────────────────────────
+// Redraws the entire suggestions panel from state.batches[].
+
+function renderSuggestions() {
+  const body = document.getElementById("suggestions-body");
+
+  // Loading state
+  if (state.isSuggestionsLoading) {
+    body.innerHTML = `
+      <div class="loading-msg">
+        <span class="loading-dot"></span>
+        Analyzing transcript…
+      </div>
+    `;
+    return;
+  }
+
+  // Empty state
+  if (state.batches.length === 0) {
+    body.innerHTML = `<p class="empty-msg">Suggestions will appear after your first transcript chunk.</p>`;
+    return;
+  }
+
+  // Build HTML for all batches
+  // Newest is first in the array (we used unshift)
+  body.innerHTML = state.batches.map((batch, batchIndex) => `
+    <div class="batch">
+
+      <div class="batch-header">
+        <span class="batch-time">${formatTime(batch.timestamp)}</span>
+        ${batchIndex === 0 ? '<span class="batch-latest">Latest</span>' : ''}
+      </div>
+
+      ${batch.items.map((item, itemIndex) => {
+
+        // Look up the display metadata for this suggestion type
+        // Fall back to "context" style if type is unknown
+        const meta = TYPE_META[item.type] || TYPE_META.context;
+
+        return `
+          <div class="suggestion-card"
+               data-batch="${batchIndex}"
+               data-item="${itemIndex}">
+
+            <div class="card-top">
+              <span class="type-badge"
+                    style="background:${meta.bg}; color:${meta.color}">
+                ${meta.label}
+              </span>
+              <span class="card-arrow">→</span>
+            </div>
+
+            <p class="card-preview">${item.preview}</p>
+            <p class="card-detail">${item.detail}</p>
+
+          </div>
+        `;
+      }).join("")}
+
+    </div>
+  `).join("");
+
+  // ── Attach click listeners to every card ─────────────────────────
+  // We do this AFTER rendering because the cards didn't exist before.
+  // querySelectorAll finds all matching elements.
+  document.querySelectorAll(".suggestion-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const batchIndex = parseInt(card.dataset.batch);
+      const itemIndex  = parseInt(card.dataset.item);
+      const item = state.batches[batchIndex].items[itemIndex];
+      handleSuggestionClick(item);
+    });
+  });
+  
+  // Disable refresh button while loading
+  const refreshBtn = document.getElementById("btn-refresh");
+  refreshBtn.disabled = state.isSuggestionsLoading;
+  refreshBtn.style.opacity = state.isSuggestionsLoading ? "0.5" : "1";
+  }
+
+// ─── RENDER CHAT ──────────────────────────────────────────────────
+// Redraws the entire chat panel from state.chat[].
+
+function renderChat() {
+  const body = document.getElementById("chat-body");
+
+  if (state.chat.length === 0) {
+    body.innerHTML = `<p class="empty-msg">Click a suggestion or type a question below.</p>`;
+    return;
+  }
+
+  // Build a message bubble for each chat item
+  body.innerHTML = state.chat.map(msg => `
+    <div class="chat-msg ${msg.role}">
+
+      <div class="msg-meta">
+        <span class="msg-role">${msg.role === "assistant" ? "Assistant" : "You"}</span>
+        <span class="msg-time">${formatTime(msg.timestamp)}</span>
+        ${msg.fromSuggestion ? '<span class="msg-source">↗ from suggestion</span>' : ""}
+      </div>
+
+      <div class="msg-bubble">${msg.role === 'user' ? escapeHtml(msg.content) : msg.content}</div>
+
+    </div>
+  `).join("");
+
+  // Show a "thinking" indicator while waiting for a response
+  if (state.isChatLoading) {
+    body.innerHTML += `
+      <div class="chat-thinking">
+        <span class="loading-dot"></span>
+        Thinking…
+      </div>
+    `;
+  }
+
+  // Always scroll to the bottom so latest message is visible
+  body.scrollTop = body.scrollHeight;
+
+  // Disable send button while loading to prevent multiple simultaneous calls
+  const sendBtn = document.getElementById("btn-send");
+  sendBtn.disabled = state.isChatLoading;
+  sendBtn.style.opacity = state.isChatLoading ? "0.5" : "1";
+  }
+
+// ─── EXPORT SESSION ───────────────────────────────────────────────
+// Downloads the full session as a JSON file.
+// Includes every transcript chunk, every suggestion batch,
+// and the full chat history — all with timestamps.
+
+function exportSession() {
+
+  if (state.transcript.length === 0 && state.batches.length === 0 && state.chat.length === 0) {
+    setStatus("Nothing to export yet.", true);
+    return;
+  }
+
+  const session = {
+    exportedAt: new Date().toISOString(),
+    sessionStart: sessionStart.toISOString(),
+
+    transcript: state.transcript.map(chunk => ({
+      timestamp: chunk.timestamp.toISOString(),
+      text: chunk.text
+    })),
+
+    suggestionBatches: [...state.batches].reverse().map(batch => ({
+      timestamp: batch.timestamp.toISOString(),
+      suggestions: batch.items.map(item => ({
+        type: item.type,
+        preview: item.preview,
+        detail: item.detail
+      }))
+    })),
+
+    chat: state.chat.map(msg => ({
+      timestamp: msg.timestamp.toISOString(),
+      role: msg.role,
+      content: msg.content,
+      fromSuggestion: msg.fromSuggestion
+    }))
+  };
+
+  // Convert the object to a formatted JSON string
+  const json = JSON.stringify(session, null, 2);
+
+  // Create a Blob from the string and trigger a download
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `twinmind-session-${Date.now()}.json`;
+  a.click();
+
+  // Clean up the temporary URL
+  URL.revokeObjectURL(url);
+
+  setStatus("Session exported.");
+}
+
+// ─── HANDLE SUGGESTION CLICK ──────────────────────────────────────
+// Called when a user clicks a suggestion card.
+// Uses the detailPrompt which is tailored to the suggestion type.
+
+async function handleSuggestionClick(item) {
+
+  if (!state.apiKey) {
+    setStatus("No API key. Open settings.", true);
+    return;
+  }
+
+  // Add the suggestion preview as a user message
+  // fromSuggestion: true so we can show the "↗ from suggestion" label
+  state.chat.push({
+    role: "user",
+    content: item.preview,
+    timestamp: new Date(),
+    fromSuggestion: true
+  });
+
+  state.isChatLoading = true;
+  renderChat();
+
+  // Build the detail prompt by replacing the placeholders
+  // {type} and {suggestion} are filled in with this card's actual values
+  const prompt = state.detailPrompt
+    .replace("{type}", item.type)
+    .replace("{suggestion}", item.preview);
+
+  // Take last N chars of transcript for context
+  const fullText = state.transcript.map(c => c.text).join(" ");
+  const context = fullText.slice(-state.chatContext);
+
+  try {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${state.apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.5,      // lower than suggestions — we want focused answers
+        max_tokens: 1200,
+        messages: [
+          {
+            role: "system",
+            content: prompt
+          },
+          {
+            role: "user",
+            content: `FULL MEETING TRANSCRIPT:\n\n${context}`
+          }
+        ]
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      setStatus("Groq error: " + data.error.message, true);
+      state.isChatLoading = false;
+      renderChat();
+      return;
+    }
+
+    // Add the assistant's reply to state.chat
+    state.chat.push({
+      role: "assistant",
+      content: data.choices[0].message.content,
+      timestamp: new Date(),
+      fromSuggestion: false
+    });
+
+  } catch(e) {
+    setStatus("Network error: " + e.message, true);
+  }
+
+  state.isChatLoading = false;
+  renderChat();
+}
+
+// ─── SEND CHAT MESSAGE ────────────────────────────────────────────
+// Called when the user types a question and presses Send or Enter.
+// Sends the FULL conversation history so the model has memory.
+
+async function sendChatMessage() {
+
+  const input = document.getElementById("chat-input");
+  const text = input.value.trim();
+
+  // Don't send empty messages
+  if (!text) return;
+
+  if (!state.apiKey) {
+    setStatus("No API key. Open settings.", true);
+    return;
+  }
+
+  // Don't send while already waiting for a response
+  if (state.isChatLoading) return;
+
+  // Add user message to state and clear the input field
+  state.chat.push({
+    role: "user",
+    content: text,
+    timestamp: new Date(),
+    fromSuggestion: false
+  });
+  input.value = "";
+
+  state.isChatLoading = true;
+  renderChat();
+
+  // Build the full transcript context
+  const fullText = state.transcript.map(c => c.text).join(" ");
+  const context = fullText.slice(-state.chatContext);
+
+  // Build the messages array for the API call.
+  // This is the key difference from suggestion clicks —
+  // we include the ENTIRE chat history so the model has memory.
+  const messages = [
+    {
+      role: "system",
+      content: state.chatPrompt + `\n\nMEETING TRANSCRIPT:\n\n${context || "(no transcript yet)"}`
+    },
+    // Spread all previous chat messages after the system prompt
+    // .map() here strips the extra fields (timestamp, fromSuggestion)
+    // that the Groq API doesn't understand — it only wants role + content
+    ...state.chat.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }))
+  ];
+
+  try {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${state.apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.5,
+        max_tokens: 1200,
+        messages: messages
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      setStatus("Groq error: " + data.error.message, true);
+      state.isChatLoading = false;
+      renderChat();
+      return;
+    }
+
+    state.chat.push({
+      role: "assistant",
+      content: data.choices[0].message.content,
+      timestamp: new Date(),
+      fromSuggestion: false
+    });
+
+  } catch(e) {
+    setStatus("Network error: " + e.message, true);
+  }
+
+  state.isChatLoading = false;
+  renderChat();
+}
+
+  
+  // ─── EVENT LISTENERS ─────────────────────────────────────────────
+
+  document.getElementById("btn-settings").addEventListener("click", openSettings);
+
+  document.getElementById("btn-close-settings").addEventListener("click", closeSettings);
+
+  document.getElementById("btn-save-settings").addEventListener("click", () => {
+    readModal();
+    saveSettings();
+    closeSettings();
+    setStatus("Settings saved.");
+  });
+
+  document.getElementById("btn-reset-defaults").addEventListener("click", () => {
+    // Reset the modal fields to defaults WITHOUT saving yet
+    document.getElementById("input-api-key").value = "";
+    document.getElementById("input-suggestion-prompt").value = DEFAULTS.suggestionPrompt;
+    document.getElementById("input-detail-prompt").value = DEFAULTS.detailPrompt;
+    document.getElementById("input-chat-prompt").value = DEFAULTS.chatPrompt;
+    document.getElementById("input-sug-ctx").value = DEFAULTS.suggestionContext;
+    document.getElementById("input-chat-ctx").value = DEFAULTS.chatContext;
+    document.getElementById("input-interval").value = DEFAULTS.chunkInterval;
+  });
+
+  // Close modal if user clicks the dark overlay behind it
+  document.getElementById("modal-overlay").addEventListener("click", (e) => {
+    if (e.target === document.getElementById("modal-overlay")) {
+      closeSettings();
+    }
+  });
+
+  // Export button click
+  document.getElementById("btn-export").addEventListener("click", exportSession); 
+
+  document.getElementById("btn-record").addEventListener("click", () => {
+    if (state.isRecording) {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+    });
+
+    document.getElementById("btn-refresh").addEventListener("click", () => {
+        generateSuggestions(true);  // true = manual trigger
+    });
+
+    // Send button click
+    document.getElementById("btn-send").addEventListener("click", sendChatMessage);
+
+    // Enter key in the chat input
+    document.getElementById("chat-input").addEventListener("keydown", (e) => {
+    // Enter without Shift sends the message
+    // Shift+Enter would allow a newline (standard chat convention)
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();   // stop the default Enter behavior (form submit)
+        sendChatMessage();
+    }
+    });
+
+  // ─── INIT ─────────────────────────────────────────────────────────
+  // Runs once when the page loads.
+
+  function init() {
+    loadSettings();
+    // If no API key saved, open settings automatically
+    if (!state.apiKey) {
+      openSettings();
+    }
+  }
+
+  init();
+
+</script>
+
+</body>
+</html>
