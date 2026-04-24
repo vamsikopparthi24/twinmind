@@ -6,7 +6,7 @@ after each chunk. Click any suggestion for a detailed answer, or ask
 your own questions in the chat panel.
 
 ## Live Demo
-resplendent-sprinkles-1bd66f.netlify.app
+(resplendent-sprinkles-1bd66f.netlify.app)
 
 ## GitHub
 (https://github.com/vamsikopparthi24/twinmind)
