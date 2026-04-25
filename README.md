@@ -15,7 +15,7 @@ your own questions in the chat panel.
 1. Open the deployed URL in Chrome
 2. Open Settings (⚙) and paste your Groq API key (`gsk_...`)
 3. Click **⏺ Record** and allow microphone access
-4. Speak — transcript chunks appear every ~30 seconds
+4. Speak - transcript chunks appear every ~30 seconds
 5. Suggestions auto-generate after each chunk, or click **↻ Refresh**
 6. Click any suggestion card for a detailed answer in the Chat panel
 7. Type follow-up questions directly in the chat input
@@ -41,7 +41,7 @@ This is the core of the product. Three prompts, each with a distinct job.
 Suggestions use only the **last 800 characters** of transcript, not the full 
 history. This is intentional. Suggestions should react to what was JUST said. 
 Longer context causes the model to summarize the entire meeting instead of the 
-current moment — generating broad, generic cards instead of timely ones.
+current moment generating broad, generic cards instead of timely ones.
 
 The prompt gives the model explicit type-selection rules rather than leaving 
 it to decide freely:
@@ -77,7 +77,7 @@ long bullet-pointed reports, which are not useful in a live meeting context.
 ### Chat prompt — memory via conversation history
 
 Free-text chat sends the **entire conversation history** on every API call. 
-LLMs have no built-in memory between calls — passing history is how multi-turn 
+LLMs have no built-in memory between calls passing history is how multi-turn 
 coherence works. The system message also includes the last 3000 characters of 
 transcript so every answer has full meeting context.
 
@@ -124,7 +124,7 @@ For a demo and interview, a single readable file is the right call.
 **innerHTML rendering vs a virtual DOM**  
 Each render function rewrites its section entirely. Simpler than diffing, 
 fine at this scale. The tradeoff is re-attaching click listeners after every 
-render — acceptable here, would use event delegation at scale.
+render acceptable here, would use event delegation at scale.
 
 ## What I'd improve with more time
 
